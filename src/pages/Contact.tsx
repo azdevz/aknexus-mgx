@@ -191,13 +191,6 @@ export default function Contact() {
                     {isSubmitting ? 'Sending Message...' : 'Send Message'}
                   </Button>
                 </form>
-
-                <div className="mt-4 p-3 bg-blue-50 rounded-md border border-blue-200">
-                  <p className="text-sm text-blue-700">
-                    <strong>Note:</strong> Form submissions are currently logged to console. 
-                    In production, messages will be sent directly to info@aknexus.co
-                  </p>
-                </div>
               </CardContent>
             </Card>
 
@@ -232,7 +225,7 @@ export default function Contact() {
                   <div className="flex items-start space-x-4">
                     <Clock className="w-6 h-6 text-blue-600 mt-1" />
                     <div>
-                      <h3 className="font-semibent text-gray-900">Business Hours</h3>
+                      <h3 className="font-semibold text-gray-900">Business Hours</h3>
                       <p className="text-gray-600">Monday - Friday: 9:00 AM - 6:00 PM</p>
                       <p className="text-gray-600">Saturday: 10:00 AM - 4:00 PM</p>
                       <p className="text-gray-600">Sunday: Closed</p>
@@ -251,8 +244,9 @@ export default function Contact() {
                     <MapPin className="w-6 h-6 text-blue-600 mt-1" />
                     <div>
                       <Badge variant="secondary" className="mb-2">UAE Headquarters</Badge>
-                      <p className="text-gray-600">Dubai, United Arab Emirates</p>
-                      <p className="text-sm text-gray-500">Middle East & Africa Operations</p>
+                      <p className="text-gray-600">AK NEXUS FZ LLC</p>
+                      <p className="text-gray-600">RAKEZ Compass Coworking Centre</p>
+                      <p className="text-gray-600">Ras Al Khaimah, UAE</p>
                     </div>
                   </div>
 
@@ -260,8 +254,9 @@ export default function Contact() {
                     <MapPin className="w-6 h-6 text-blue-600 mt-1" />
                     <div>
                       <Badge variant="secondary" className="mb-2">USA Office</Badge>
-                      <p className="text-gray-600">United States</p>
-                      <p className="text-sm text-gray-500">North America Operations</p>
+                      <p className="text-gray-600">AK NEXUS LLC</p>
+                      <p className="text-gray-600">30 N Gould St Ste R</p>
+                      <p className="text-gray-600">Sheridan, WY 82801</p>
                     </div>
                   </div>
                 </CardContent>

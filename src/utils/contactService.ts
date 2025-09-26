@@ -1,3 +1,5 @@
+import emailjs from '@emailjs/browser';
+
 interface ContactFormData {
   name: string;
   email: string;
@@ -8,25 +10,79 @@ interface ContactFormData {
 
 export const submitContactForm = async (formData: ContactFormData): Promise<boolean> => {
   try {
+    // EmailJS configuration - these would be environment variables in production
+    const serviceId = 'service_aknexus'; // Replace with your EmailJS service ID
+    const templateId = 'template_contact'; // Replace with your EmailJS template ID
+    const publicKey = 'your_public_key'; // Replace with your EmailJS public key
+
+    // Prepare template parameters for EmailJS
+    const templateParams = {
+      to_email: 'info@aknexus.co',
+      from_name: formData.name,
+      from_email: formData.email,
+      phone: formData.phone || 'Not provided',
+      service: formData.service || 'Not specified',
+      message: formData.message,
+      reply_to: formData.email,
+    };
+
     // For demo purposes, we'll simulate a successful submission
-    // In production, this would integrate with your email service
+    // In production, uncomment the EmailJS code below and configure your EmailJS account
     
-    console.log('Contact form submission:', {
-      to: 'info@aknexus.co',
-      from: formData.email,
-      subject: `New Contact Form Submission from ${formData.name}`,
-      data: formData,
-      timestamp: new Date().toISOString()
+    console.log('Contact form submission to info@aknexus.co:', {
+      timestamp: new Date().toISOString(),
+      data: templateParams
     });
 
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1500));
 
-    // For now, always return success
-    // In production, replace this with actual email service integration
+    // Uncomment this for actual EmailJS integration:
+    /*
+    const response = await emailjs.send(
+      serviceId,
+      templateId,
+      templateParams,
+      publicKey
+    );
+    
+    if (response.status === 200) {
+      return true;
+    } else {
+      throw new Error('EmailJS failed');
+    }
+    */
+
+    // For now, always return success for demo
     return true;
   } catch (error) {
     console.error('Contact form submission error:', error);
+    return false;
+  }
+};
+
+// Alternative: Using Formspree (simpler setup)
+export const submitToFormspree = async (formData: ContactFormData): Promise<boolean> => {
+  try {
+    const response = await fetch('https://formspree.io/f/your_form_id', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        service: formData.service,
+        message: formData.message,
+        _replyto: formData.email,
+        _subject: `New Contact Form Submission from ${formData.name}`,
+      }),
+    });
+
+    return response.ok;
+  } catch (error) {
+    console.error('Formspree submission error:', error);
     return false;
   }
 };
