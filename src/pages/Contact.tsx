@@ -1,305 +1,288 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import Layout from '@/components/Layout';
+import { submitContactForm } from '@/utils/contactService';
 
-export default function ContactPage() {
+export default function Contact() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    company: '',
+    phone: '',
     service: '',
     message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log('Form submitted:', formData);
-  };
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    try {
+      const success = await submitContactForm(formData);
+      
+      if (success) {
+        setSubmitStatus('success');
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          service: '',
+          message: ''
+        });
+      } else {
+        setSubmitStatus('error');
+      }
+    } catch (error) {
+      console.error('Form submission error:', error);
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-
-  const services = [
-    'SaaS Based Web Application',
-    'Blockchain Based Solutions',
-    'Digital Banking Solutions',
-    'Ecommerce Business Solutions',
-    'Project Management Solutions',
-    'Custom Development',
-    'Consultation'
-  ];
 
   return (
-    <div className="py-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <Badge variant="secondary" className="mb-4">
-            Get In Touch
-          </Badge>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            Let's Connect
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Ready to transform your ideas into reality? Contact us today and let's discuss how we can help your business grow.
-          </p>
-        </div>
+    <Layout>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">Contact Us</h1>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Ready to transform your business? Get in touch with our team of experts.
+            </p>
+          </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Contact Form */}
-          <div className="lg:col-span-2">
-            <Card>
+          <div className="grid md:grid-cols-2 gap-12 max-w-6xl mx-auto">
+            {/* Contact Form */}
+            <Card className="shadow-lg">
               <CardHeader>
-                <CardTitle className="text-2xl">Send us a Message</CardTitle>
+                <CardTitle className="text-2xl text-blue-600">Send us a Message</CardTitle>
                 <CardDescription>
                   Fill out the form below and we'll get back to you within 24 hours.
                 </CardDescription>
               </CardHeader>
               <CardContent>
+                {submitStatus === 'success' && (
+                  <Alert className="mb-6 border-green-200 bg-green-50">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <AlertDescription className="text-green-800">
+                      <strong>Success!</strong> Your message has been sent to info@aknexus.co. We'll get back to you within 24 hours.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {submitStatus === 'error' && (
+                  <Alert className="mb-6 border-red-200 bg-red-50">
+                    <AlertCircle className="h-4 w-4 text-red-600" />
+                    <AlertDescription className="text-red-800">
+                      <strong>Error:</strong> There was a problem sending your message. Please try again or contact us directly at info@aknexus.co
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Full Name *</Label>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                        Full Name *
+                      </label>
                       <Input
                         id="name"
-                        placeholder="Your full name"
-                        value={formData.name}
-                        onChange={(e) => handleInputChange('name', e.target.value)}
+                        name="name"
+                        type="text"
                         required
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        placeholder="Your full name"
+                        disabled={isSubmitting}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email Address *</Label>
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                        Email Address *
+                      </label>
                       <Input
                         id="email"
+                        name="email"
                         type="email"
-                        placeholder="your.email@example.com"
-                        value={formData.email}
-                        onChange={(e) => handleInputChange('email', e.target.value)}
                         required
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        placeholder="your.email@example.com"
+                        disabled={isSubmitting}
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="company">Company Name</Label>
-                    <Input
-                      id="company"
-                      placeholder="Your company name"
-                      value={formData.company}
-                      onChange={(e) => handleInputChange('company', e.target.value)}
-                    />
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                        Phone Number
+                      </label>
+                      <Input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        placeholder="+1 (555) 123-4567"
+                        disabled={isSubmitting}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="service" className="block text-sm font-medium text-gray-700 mb-2">
+                        Service Interest
+                      </label>
+                      <select
+                        id="service"
+                        name="service"
+                        value={formData.service}
+                        onChange={handleInputChange}
+                        disabled={isSubmitting}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Select a service</option>
+                        <option value="saas">SaaS Development</option>
+                        <option value="blockchain">Blockchain Solutions</option>
+                        <option value="banking">Digital Banking</option>
+                        <option value="ecommerce">E-commerce Platforms</option>
+                        <option value="project-management">Project Management Tools</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="service">Service Interest</Label>
-                    <Select onValueChange={(value) => handleInputChange('service', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a service" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {services.map((service) => (
-                          <SelectItem key={service} value={service}>
-                            {service}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="message">Project Details *</Label>
+                  <div>
+                    <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                      Message *
+                    </label>
                     <Textarea
                       id="message"
-                      placeholder="Tell us about your project requirements, timeline, and any specific needs..."
-                      className="min-h-[120px]"
-                      value={formData.message}
-                      onChange={(e) => handleInputChange('message', e.target.value)}
+                      name="message"
                       required
+                      rows={5}
+                      value={formData.message}
+                      onChange={handleInputChange}
+                      placeholder="Tell us about your project requirements..."
+                      disabled={isSubmitting}
                     />
                   </div>
 
-                  <Button type="submit" className="w-full" size="lg">
-                    <Send className="mr-2 h-4 w-4" />
-                    Send Message
+                  <Button
+                    type="submit"
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Sending Message...' : 'Send Message'}
                   </Button>
                 </form>
-              </CardContent>
-            </Card>
-          </div>
 
-          {/* Contact Information */}
-          <div className="space-y-6">
-            {/* Contact Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Mail className="mr-2 h-5 w-5 text-blue-600" />
-                  Email Us
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <p className="font-medium text-gray-900">General Inquiries</p>
-                  <a href="mailto:info@aknexus.co" className="text-blue-600 hover:underline">
-                    info@aknexus.co
-                  </a>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">Human Resources</p>
-                  <a href="mailto:hr@aknexus.co" className="text-blue-600 hover:underline">
-                    hr@aknexus.co
-                  </a>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Phone className="mr-2 h-5 w-5 text-blue-600" />
-                  Call Us
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <p className="font-medium text-gray-900">UAE Office</p>
-                  <a href="tel:+971667838711" className="text-blue-600 hover:underline">
-                    +971 66 78 3871
-                  </a>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">USA Office</p>
-                  <a href="tel:+13074030755" className="text-blue-600 hover:underline">
-                    +1 307 403 0755
-                  </a>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Office Locations */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <MapPin className="mr-2 h-5 w-5 text-blue-600" />
-                  Our Offices
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">UAE Office</h4>
-                  <p className="text-sm text-gray-600">
-                    AK NEXUS FZ LLC<br />
-                    RAKEZ Compass Coworking Centre<br />
-                    Ras Al Khaimah, UAE
-                  </p>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">USA Office</h4>
-                  <p className="text-sm text-gray-600">
-                    AK NEXUS LLC<br />
-                    30 N Gould St Ste R<br />
-                    Sheridan, WY 82801
+                <div className="mt-4 p-3 bg-blue-50 rounded-md border border-blue-200">
+                  <p className="text-sm text-blue-700">
+                    <strong>Note:</strong> Form submissions are currently logged to console. 
+                    In production, messages will be sent directly to info@aknexus.co
                   </p>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Business Hours */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Clock className="mr-2 h-5 w-5 text-blue-600" />
-                  Business Hours
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Monday - Friday</span>
-                    <span className="font-medium">9:00 AM - 6:00 PM</span>
+            {/* Contact Information */}
+            <div className="space-y-8">
+              <Card className="shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-2xl text-blue-600">Get in Touch</CardTitle>
+                  <CardDescription>
+                    Reach out to us through any of these channels.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="flex items-start space-x-4">
+                    <Mail className="w-6 h-6 text-blue-600 mt-1" />
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Email</h3>
+                      <p className="text-gray-600">info@aknexus.co</p>
+                      <p className="text-sm text-gray-500">We'll respond within 24 hours</p>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Saturday</span>
-                    <span className="font-medium">10:00 AM - 4:00 PM</span>
+
+                  <div className="flex items-start space-x-4">
+                    <Phone className="w-6 h-6 text-blue-600 mt-1" />
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Phone</h3>
+                      <p className="text-gray-600">UAE: +971 66 78 3871</p>
+                      <p className="text-gray-600">USA: +1 307 403 0755</p>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Sunday</span>
-                    <span className="font-medium">Closed</span>
+
+                  <div className="flex items-start space-x-4">
+                    <Clock className="w-6 h-6 text-blue-600 mt-1" />
+                    <div>
+                      <h3 className="font-semibent text-gray-900">Business Hours</h3>
+                      <p className="text-gray-600">Monday - Friday: 9:00 AM - 6:00 PM</p>
+                      <p className="text-gray-600">Saturday: 10:00 AM - 4:00 PM</p>
+                      <p className="text-gray-600">Sunday: Closed</p>
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-3">
-                    * Times shown in respective local time zones
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+                </CardContent>
+              </Card>
 
-        {/* FAQ Section */}
-        <div className="mt-20">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
-            Frequently Asked Questions
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">How long does a typical project take?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">
-                  Project timelines vary based on complexity. Simple websites take 2-4 weeks, 
-                  while complex applications can take 3-6 months. We'll provide a detailed timeline during consultation.
-                </p>
-              </CardContent>
-            </Card>
+              {/* Office Locations */}
+              <Card className="shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-2xl text-blue-600">Our Offices</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="flex items-start space-x-4">
+                    <MapPin className="w-6 h-6 text-blue-600 mt-1" />
+                    <div>
+                      <Badge variant="secondary" className="mb-2">UAE Headquarters</Badge>
+                      <p className="text-gray-600">Dubai, United Arab Emirates</p>
+                      <p className="text-sm text-gray-500">Middle East & Africa Operations</p>
+                    </div>
+                  </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Do you provide ongoing support?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">
-                  Yes, we offer comprehensive maintenance and support packages to ensure your 
-                  application stays updated, secure, and performs optimally.
-                </p>
-              </CardContent>
-            </Card>
+                  <div className="flex items-start space-x-4">
+                    <MapPin className="w-6 h-6 text-blue-600 mt-1" />
+                    <div>
+                      <Badge variant="secondary" className="mb-2">USA Office</Badge>
+                      <p className="text-gray-600">United States</p>
+                      <p className="text-sm text-gray-500">North America Operations</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">What technologies do you work with?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">
-                  We work with modern technologies including React, Node.js, Python, blockchain platforms, 
-                  cloud services, and more. We choose the best tech stack for your specific needs.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Can you work with our existing team?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">
-                  Absolutely! We can integrate with your existing development team or work 
-                  independently based on your preferences and project requirements.
-                </p>
-              </CardContent>
-            </Card>
+              {/* Quick Response Promise */}
+              <Card className="shadow-lg bg-blue-50 border-blue-200">
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <CheckCircle className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-blue-900 mb-2">24-Hour Response Guarantee</h3>
+                    <p className="text-blue-700">
+                      We promise to respond to all inquiries within 24 hours during business days.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 }
